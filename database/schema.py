@@ -1,17 +1,28 @@
-from mongoengine import Document, StringField, EmailField, DateTimeField, URLField, ReferenceField, BooleanField
+from mongoengine import (
+    Document,
+    StringField,
+    EmailField,
+    DateTimeField,
+    URLField,
+    ReferenceField,
+    BooleanField,
+)
 from datetime import datetime
-
-
 
 
 class Department(Document):
 
     department_name = StringField(required=True)
 
-    department_image = URLField(required=True, default="www.google.com")
+    department_image = URLField()
 
+    def to_dict(self):
 
-
+        return {
+            "id": str(self.id),
+            "department_name": self.department_name,
+            "department_image": self.department_image,
+        }
 
 
 class Student(Document):
@@ -32,22 +43,18 @@ class Student(Document):
 
     updated_at = DateTimeField(default=datetime.now())
 
-    meta = {"collection": "users", "strict": False}
-
+    meta = {"strict": False}
 
     def to_dict(self) -> dict:
         return {
             "id": str(self.id),
             "firstname": self.firstname,
             "lastname": self.lastname,
-            "email": self.email, 
-            "department": self.department,
+            "email": self.email,
+            "department": str(self.department.id),
             "created_at": str(self.created_at),
-            "updated_at": str(self.updated_at)
+            "updated_at": str(self.updated_at),
         }
-    
-
-
 
 
 class Election(Document):
@@ -57,9 +64,6 @@ class Election(Document):
     election_image = URLField(required=False, default=None)
 
     department = ReferenceField(Department, required=True)
-
-
-
 
 
 class EmailOTP(Document):

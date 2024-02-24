@@ -63,6 +63,10 @@ class Auth:
 
         if user is None or not checkPassword(login_input.password, user.password):
             raise BadRequestException("incorrect email or password")
+        
+
+        if not user.is_verified:
+            raise BadRequestException("you're not verified, please verify your account")
 
         access_token = self.auth_token.create_access_token(str(user.id))
 
