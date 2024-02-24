@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from mongoengine import connect, errors
 from routers.auth import router as auth
 from routers.student import router as student
+from routers.department import router as department
 from exceptions.custom_exception import *
 from dotenv import load_dotenv
 
@@ -47,6 +48,7 @@ app.add_middleware(
 
 app.include_router(auth)
 app.include_router(student)
+app.include_router(department)
 app.add_exception_handler(UserExistException, user_exist_exception_handler)
 app.add_exception_handler(UnauthorizedException, unauthorized_exception_handler)
 app.add_exception_handler(ServerErrorException, server_exception_handler)

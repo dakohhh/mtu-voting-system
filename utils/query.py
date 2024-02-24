@@ -1,4 +1,5 @@
-from pydantic import BaseModel, EmailStr
+from typing import Optional
+from pydantic import BaseModel, EmailStr, HttpUrl
 from beanie import PydanticObjectId
 from datetime import datetime
 
@@ -23,9 +24,18 @@ class SignupSchema(BaseModel):
 
     password: str
 
-    email: str
+    email: EmailStr
 
     department: PydanticObjectId
+
+
+
+
+class DepartmentSchema(BaseModel):
+
+    department_name:str
+
+    department_image: Optional[HttpUrl] = None
 
 
 

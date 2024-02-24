@@ -7,14 +7,14 @@ import typing
 class StudentRepository:
 
     @staticmethod
-    async def create_student(student: SignupSchema):
+    async def create_student(signup_input: SignupSchema) -> Student:
 
         query = Student(
-            firstname=student.firstname,
-            lastname=student.lastname,
-            password=hashPassword(student.password),
-            email=student.email,
-            department=student.department,
+            firstname=signup_input.firstname,
+            lastname=signup_input.lastname,
+            password=hashPassword(signup_input.password),
+            email=signup_input.email,
+            department=signup_input.department,
         )
 
         query.save()

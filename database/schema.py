@@ -1,4 +1,4 @@
-from mongoengine import Document, StringField, EmailField, DateTimeField, URLField, ReferenceField
+from mongoengine import Document, StringField, EmailField, DateTimeField, URLField, ReferenceField, BooleanField
 from datetime import datetime
 
 
@@ -26,6 +26,8 @@ class Student(Document):
 
     department = ReferenceField(Department, required=True)
 
+    is_verified = BooleanField(default=False)
+
     created_at = DateTimeField(default=datetime.now())
 
     updated_at = DateTimeField(default=datetime.now())
@@ -39,6 +41,7 @@ class Student(Document):
             "firstname": self.firstname,
             "lastname": self.lastname,
             "email": self.email, 
+            "department": self.department,
             "created_at": str(self.created_at),
             "updated_at": str(self.updated_at)
         }
@@ -54,3 +57,13 @@ class Election(Document):
     election_image = URLField(required=False, default=None)
 
     department = ReferenceField(Department, required=True)
+
+
+
+
+
+class EmailOTP(Document):
+
+    otp = StringField(required=True)
+
+    student = ReferenceField(Student, required=True)

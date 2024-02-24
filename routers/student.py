@@ -20,24 +20,27 @@ async def signup_student(request: Request, signup_input: SignupSchema):
 
     tasks = [
         StudentRepository.does_student_email_exits(signup_input.email),
-        await DepartmentRepository.does_department_exist(signup_input.department),
+        DepartmentRepository.does_department_exist(signup_input.department),
     ]
 
     (
-        does_student_email_exits,
-        does_department_exist,
+        email_exits,
+        department_exist,
     ) = await asyncio.gather(*tasks)
 
-    if await does_student_email_exits:
+
+    if email_exits:
 
         raise BadRequestException("email already exists")
 
-    if not does_department_exist:
+    if not department_exist:
 
-        raise BadRequestException("department does not already exists")
+        raise BadRequestException("department does not exists")
     
 
+    student = await StudentRepository.create_student(signup_input)
+    
+    # context = {"user": }
     
 
-
-    return CustomResponse("login user successfully")
+    return CustomResponse("signup user successfully")
