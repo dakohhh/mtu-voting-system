@@ -39,6 +39,18 @@ class DepartmentSchema(BaseModel):
 
 
 
+
+class AdminSchema(BaseModel):
+
+    email: EmailStr
+
+    password: str
+
+    department: PydanticObjectId
+
+
+
+
 class Token(BaseModel):
     user: str
     exp: int

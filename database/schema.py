@@ -57,6 +57,32 @@ class Student(Document):
         }
 
 
+class Admin(Document):
+
+    email = EmailField(required=True, unique=True)
+
+    password = StringField(required=True)
+
+    department = ReferenceField(Department, required=True)
+
+    created_at = DateTimeField(default=datetime.now())
+
+    updated_at = DateTimeField(default=datetime.now())
+
+    meta = {"strict": False}
+
+    def to_dict(self) -> dict:
+        return {
+            "id": str(self.id),
+            "email": self.email,
+            "department": str(self.department.id),
+            "created_at": str(self.created_at),
+            "updated_at": str(self.updated_at),
+        }
+
+
+
+
 class Election(Document):
 
     election_name = StringField(required=True)

@@ -3,12 +3,14 @@ import jwt
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from pydantic import ValidationError
+from repository.admin import AdminRepository
 from utils.query import Token
 from exceptions.custom_exception import CredentialsException
 from .hashing import checkPassword
 from database.schema import Student
 from utils.query import LoginSchema
 from repository.student import StudentRepository
+from repository.admin import AdminRepository
 from exceptions.custom_exception import BadRequestException
 from fastapi import Request, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -63,7 +65,6 @@ class Auth:
 
         if user is None or not checkPassword(login_input.password, user.password):
             raise BadRequestException("incorrect email or password")
-        
 
         if not user.is_verified:
             raise BadRequestException("you're not verified, please verify your account")
@@ -71,15 +72,48 @@ class Auth:
         access_token = self.auth_token.create_access_token(str(user.id))
 
         return access_token
+    
+
+
+
+    async def authenticate_admin(self, login_input: LoginSchema):
+
+        user = await AdminRepository.get_admin_by_email(login_input.email, login_input.department)
+
+
+        if user is None or not checkPassword(login_input.password, user.password):
+            raise BadRequestException("incorrect email or password")
+
+        access_token = self.auth_token.create_access_token(str(user.id))
+
+        return access_token
+    
+
+
+
 
     async def get_current_student(
         self, request: Request, data: HTTPAuthorizationCredentials = Depends(bearer)
     ) -> Student:
-        
+
         credentials = data.credentials
 
         access_token_data = self.auth_token.verify_access_token(credentials)
 
         user = await StudentRepository.get_student_by_id(access_token_data.user)
+
+        return user
+    
+
+
+    async def get_current_admin(
+        self, request: Request, data: HTTPAuthorizationCredentials = Depends(bearer)
+    ) -> Student:
+
+        credentials = data.credentials
+
+        access_token_data = self.auth_token.verify_access_token(credentials)
+
+        user = await AdminRepository.get_student_by_id(access_token_data.user)
 
         return user

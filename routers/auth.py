@@ -29,9 +29,9 @@ async def login_student(request: Request, login_input: LoginSchema):
 
 
 @router.post("/login/admin")
-async def login_student(request: Request, login_input: LoginSchema):
+async def login_admin(request: Request, login_input: LoginSchema):
 
-    token = await auth.authenticate_user(login_input)
+    token = await auth.authenticate_admin(login_input)
 
     context = {"token": token}
 

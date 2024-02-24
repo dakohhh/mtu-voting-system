@@ -1,9 +1,10 @@
 import asyncio
 from pydantic import EmailStr
-from fastapi import APIRouter, Request, BackgroundTasks
+from fastapi import APIRouter, Depends, Request, BackgroundTasks
 from authentication.auth import Auth
 from authentication.hashing import checkPassword, hashPassword
 from client.response import CustomResponse
+from database.schema import Student
 from repository.department import DepartmentRepository
 from repository.otp import OTPRespository
 from repository.student import StudentRepository
@@ -45,6 +46,25 @@ async def signup_student(request: Request, signup_input: SignupSchema):
     context = {"student": student.to_dict()}
 
     return CustomResponse("signup student successfully", data=context)
+
+
+
+@router.post("/send_voting_number")
+async def send_voting_number(request: Request, student:Student=Depends(auth.get_current_student)):
+
+    
+
+
+
+    context = {"student": student.to_dict()}
+
+    return CustomResponse("signup student successfully", data=context)
+
+
+    
+
+
+
 
 
 @router.post("/request_otp")
