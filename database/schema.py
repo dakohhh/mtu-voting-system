@@ -50,6 +50,7 @@ class Student(Document):
             "id": str(self.id),
             "firstname": self.firstname,
             "lastname": self.lastname,
+            "role": "student",
             "email": self.email,
             "department": str(self.department.id),
             "created_at": str(self.created_at),
@@ -75,21 +76,46 @@ class Admin(Document):
         return {
             "id": str(self.id),
             "email": self.email,
+            "role": "admin",
             "department": str(self.department.id),
             "created_at": str(self.created_at),
             "updated_at": str(self.updated_at),
         }
 
 
-
-
 class Election(Document):
 
     election_name = StringField(required=True)
 
+    department = ReferenceField(Department, required=True)
+
     election_image = URLField(required=False, default=None)
 
-    department = ReferenceField(Department, required=True)
+    def to_dict(self):
+
+        return {
+            "id": str(self.id),
+            "election_name": self.election_name,
+            "department": str(self.department.id),
+            "election_image": self.election_image,
+        }
+
+
+class Candidate(Document):
+
+    candidate_name = StringField(required=True)
+
+    candidate_image = URLField()
+
+    election = ReferenceField(Election, required=True)
+
+    def to_dict(self):
+        return {
+            "id": str(self.id),
+            "candidate_name": self.candidate_name,
+            "election": str(self.election.id),
+            "candidate_image": self.candidate_image,
+        }
 
 
 class EmailOTP(Document):

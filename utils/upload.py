@@ -1,10 +1,13 @@
 import os
 from pprint import pprint
+import shutil
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
 from dotenv import load_dotenv
 from typing import Union, Any
+
+from fastapi import UploadFile
 
 load_dotenv()
 
@@ -25,75 +28,66 @@ cloudinary.config(
 
 class Upload():
 
-	def __init__(self, private_name, file:Union[str, Any], file_name):
+	def __init__(self, private_name, file_name):
 
 		self.private_name = private_name
 
-		self.file = file
-
 		self.file_name = file_name
+		
 
-	def handle_upload(self) -> dict:
+	def handle_upload(self, file:Union[UploadFile, Any]) -> dict:
+
+		upload_directory = "./uploaded_files"
+    
+		os.makedirs(upload_directory, exist_ok=True)
+
+		file_path = f"{upload_directory}/{file.filename}"
+
+		with open(file_path, "wb") as file_object:
+			file.file.seek(0)
+			shutil.copyfileobj(file.file, file_object)
 
 		metadata = cloudinary.uploader.upload(
-			self.file, 
-			public_id=f"{self.private_name}/{self.file_name}")
+			file_path, 
+			folder=self.private_name,
+			resource_type="image",
+			public_id=f"{self.private_name}/{self.file_name}"
+		)
 
+		os.remove(file_path)
+		
 		return metadata
 
 
-	async def handle_delete(self, name:str):
+	async def handle_delete(self):
 
-		public_ids = ["them_wisdom.jpg"]
-		image_delete_result = cloudinary.api.delete_resources(public_ids, resource_type="image", type="upload")
-		print(image_delete_result)
+		public_ids = [f"{self.private_name}/{self.private_name}/{self.file_name}"]
 
-		result = cloudinary.api.delete_resources(public_ids, resource_type="video", type="upload")
+		image_delete_result = cloudinary.api.delete_resources(
+			public_ids, 
+			resource_type="image", 
+			type="upload"
+		)
 
-		print(result)
+		return image_delete_result
 
 	
 
-class SecuritySystemUpload(Upload):
+class MTUVoteUpload(Upload):
 
-	private_name = "security_campus"
+	private_name = "mtu_vote"
 
-	def __init__(self, file:Union[str, Any], file_name:str):
+	def __init__(self, file_name:str):
 
-		super().__init__(self.private_name, file, file_name)
+		super().__init__(self.private_name, file_name)
 
 
 
 
 if __name__ == "__main__":
 
-	path = os.path.join(os.getcwd(), "upload_data/image.jpg")
+	path = os.path.join(os.getcwd(), "./picture.png")
 
-	uploader = SecuritySystemUpload(path, "them_wisdom")
+	uploader = MTUVoteUpload(path)
 
-	pprint(uploader.handle_upload())
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	pprint(uploader.handle_upload(path))

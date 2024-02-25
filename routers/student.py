@@ -52,7 +52,7 @@ async def signup_student(request: Request, signup_input: SignupSchema):
 @router.post("/send_voting_number")
 async def send_voting_number(request: Request, student:Student=Depends(auth.get_current_student)):
 
-    
+
 
 
 
