@@ -37,24 +37,12 @@ class Upload():
 
 	def handle_upload(self, file:Union[UploadFile, Any]) -> dict:
 
-		upload_directory = "./uploaded_files"
-    
-		os.makedirs(upload_directory, exist_ok=True)
-
-		file_path = f"{upload_directory}/{file.filename}"
-
-		with open(file_path, "wb") as file_object:
-			file.file.seek(0)
-			shutil.copyfileobj(file.file, file_object)
-
 		metadata = cloudinary.uploader.upload(
-			file_path, 
+			file.file, 
 			folder=self.private_name,
-			resource_type="image",
+			resource_type="auto",
 			public_id=f"{self.private_name}/{self.file_name}"
 		)
-
-		os.remove(file_path)
 		
 		return metadata
 

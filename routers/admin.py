@@ -5,12 +5,18 @@ from authentication.auth import Auth
 from database.schema import Admin, Student
 from client.response import CustomResponse
 from repository.admin import AdminRepository
+from repository.candidate import CandidateRepository
 from repository.department import DepartmentRepository
 from repository.elections import ElectionRepository
-from utils.query import AdminSchema, CreateElectionSchema, LoginSchema
+from utils.query import (
+    AdminSchema,
+    CreateCandidateSchema,
+    CreateElectionSchema,
+    LoginSchema,
+)
 from exceptions.custom_exception import BadRequestException
-from utils.task import save_election_image
-from utils.upload import MTUVoteUpload
+from utils.task import save_candidate_image, save_election_image
+from utils.upload import MTUVoteUpload, Upload
 
 
 router = APIRouter(tags=["Admin"], prefix="/admin")
@@ -33,19 +39,30 @@ async def create_admin(request: Request, secret: str, admin_input: AdminSchema):
 
     context = {"admin": admin.to_dict()}
 
-    return CustomResponse("login user successfully", data=context)
+    return CustomResponse("created admin user successfully", data=context)
+
+
+@router.get("/election")
+async def get_all_elections(
+    request: Request, admin: Admin = Depends(auth.get_current_admin)
+):
+
+    elections = await ElectionRepository.get_all_elections(admin.department.id)
+
+    context = {"elections": [election.to_dict() for election in elections]}
+
+    return CustomResponse("get all elections", data=context)
 
 
 @router.post("/election")
 async def create_election(
     request: Request,
-    department_id: PydanticObjectId = Form(...),
     election_name: str = Form(...),
     election_image: UploadFile = File(None),
+    department_id: PydanticObjectId = Form(...),
+    admin: Admin = Depends(auth.get_current_admin),
 ):
     election_input = CreateElectionSchema(department_id, election_name, election_image)
-
-    print(election_input.election_image)
 
     if not await DepartmentRepository.does_department_exist(
         election_input.department_id
@@ -70,23 +87,101 @@ async def create_election(
             ),
         )
 
-
         upload_thread.start()
-
 
     context = {"election": election.to_dict()}
 
     return CustomResponse("created election successfully", data=context)
 
 
+@router.get("/election/{id}")
+async def get_all_candidates_for_election(
+    request: Request,
+    id: PydanticObjectId,
+    admin: Admin = Depends(auth.get_current_admin),
+):
+
+    if not await ElectionRepository.does_election_exists(id):
+        raise BadRequestException("this election doesn't exists")
+
+    candidates = await CandidateRepository.get_all_candidate_on_election(id)
+
+    context = {"candidates": [candidate.to_dict() for candidate in candidates]}
+
+    return CustomResponse("all candidates", data=context)
+
+
+@router.post("/candidate")
+async def add_candidate_to_election(
+    request: Request,
+    candidate_input: CreateCandidateSchema = Depends(),
+    admin: Admin = Depends(auth.get_current_admin),
+):
+
+    if not await ElectionRepository.does_election_exists(candidate_input.election_id):
+
+        raise BadRequestException("this election doesn't exists")
+
+    candidate = await CandidateRepository.create_candidate(candidate_input)
+
+    if candidate_input.candidate_image:
+
+        if not candidate_input.candidate_image.content_type.startswith("image/"):
+            raise BadRequestException("file sent is not a valid image")
+
+        uploader = Upload("mtu_vote", str(candidate.id))
+
+        upload_thread = threading.Thread(
+            target=save_candidate_image,
+            args=(
+                candidate,
+                uploader,
+                candidate_input.candidate_image,
+            ),
+        )
+
+        upload_thread.start()
+
+    context = {"candidate": candidate.to_dict()}
+
+    return CustomResponse("created candidate successfully", data=context)
+
+
+@router.delete("/candidate/{id}")
+async def remove_candidate_from_election(
+    request: Request,
+    id:PydanticObjectId,
+    admin: Admin = Depends(auth.get_current_admin), 
+):
+    
+    candidate = await  CandidateRepository.get_candidate_by_id(id)
+
+
+    if candidate is None:
+        raise BadRequestException("this candidate doesn't exists")
+    
+
+    candidate.delete()
+
+
+    return CustomResponse("deleted candidate successfully")
 
 
 
 @router.delete("/election/{id}")
-async def remove_election(
-    request: Request, admin: Admin = Depends(auth.get_current_admin)
+async def delete_election(
+    request: Request, id:PydanticObjectId, admin: Admin = Depends(auth.get_current_admin)
 ):
+    
+
+    election = await ElectionRepository.get_election_by_id(id)
+
+
+    if election is None:
+        raise BadRequestException("this election doesn't exists")
+
+
 
     context = {"admin": admin.to_dict()}
 
-    return CustomResponse("login user successfully", data=context)
+    return CustomResponse("deleted election successfully")

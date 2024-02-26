@@ -105,7 +105,7 @@ class Candidate(Document):
 
     candidate_name = StringField(required=True)
 
-    candidate_image = URLField()
+    candidate_image = URLField(required=False, default=None)
 
     election = ReferenceField(Election, required=True)
 
@@ -116,6 +116,16 @@ class Candidate(Document):
             "election": str(self.election.id),
             "candidate_image": self.candidate_image,
         }
+
+
+class Vote(Document):
+
+    student = ReferenceField(Student, required=True)
+
+    candidate = ReferenceField(Candidate, required=True)
+
+    election = ReferenceField(Election, required=True)
+
 
 
 class EmailOTP(Document):

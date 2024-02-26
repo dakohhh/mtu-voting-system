@@ -57,6 +57,24 @@ class CreateElectionSchema:
         self.election_image = election_image
 
 
+
+
+
+class CreateCandidateSchema:
+    def __init__(
+        self,
+        candidate_name: str = Form(...),
+        election_id: PydanticObjectId = Form(...),
+        candidate_image: UploadFile = File(None),
+    ):
+        self.candidate_name = candidate_name
+        self.election_id = election_id
+        self.candidate_image = candidate_image
+
+
+
+
+
 class Token(BaseModel):
     user: str
     exp: int

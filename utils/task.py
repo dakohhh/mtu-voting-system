@@ -1,7 +1,7 @@
 import asyncio
 from fastapi import UploadFile
 from fastapi_mail import FastMail
-from database.schema import Election, Student
+from database.schema import Candidate, Election, Student
 from utils.mail import conf, get_otp_message_schema
 from utils.upload import MTUVoteUpload
 
@@ -28,3 +28,13 @@ def save_election_image(election:Election, uploader:MTUVoteUpload, image:UploadF
     election.election_image = metadata["secure_url"]
 
     election.save()
+
+
+
+def save_candidate_image(candidate:Candidate, uploader:MTUVoteUpload, image:UploadFile):
+
+    metadata = uploader.handle_upload(image)
+
+    candidate.candidate_image = metadata["secure_url"]
+
+    candidate.save()
