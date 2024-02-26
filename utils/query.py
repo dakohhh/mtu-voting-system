@@ -73,6 +73,13 @@ class CreateCandidateSchema:
 
 
 
+class VoteSchema(BaseModel):
+
+    candidate_id: PydanticObjectId
+
+    election_id: PydanticObjectId
+
+
 
 
 class Token(BaseModel):

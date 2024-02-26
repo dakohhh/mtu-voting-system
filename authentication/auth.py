@@ -1,4 +1,5 @@
 import os
+from tkinter import N
 import jwt
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
@@ -64,7 +65,7 @@ class Auth:
         user = await StudentRepository.get_student_by_email(email=login_input.email)
 
         if user is None or not checkPassword(login_input.password, user.password):
-            raise BadRequestException("incorrect email or password")
+            raise CredentialsException("incorrect email or password")
 
         if not user.is_verified:
             raise BadRequestException("you're not verified, please verify your account")
@@ -81,7 +82,7 @@ class Auth:
 
 
         if user is None or not checkPassword(login_input.password, user.password):
-            raise BadRequestException("incorrect email or password")
+            raise CredentialsException("incorrect email or password")
 
         access_token = self.auth_token.create_access_token(str(user.id))
 
@@ -101,6 +102,10 @@ class Auth:
 
         user = await StudentRepository.get_student_by_id(access_token_data.user)
 
+        if user is None:
+
+            raise CredentialsException("this student doesn't exists")
+
         return user
     
 
@@ -113,6 +118,11 @@ class Auth:
 
         access_token_data = self.auth_token.verify_access_token(credentials)
 
-        user = await AdminRepository.get_student_by_id(access_token_data.user)
+        user = await AdminRepository.get_admin_by_id(access_token_data.user)
+
+
+        if user is None:
+
+            raise CredentialsException("this admin doesn't exists ")
 
         return user

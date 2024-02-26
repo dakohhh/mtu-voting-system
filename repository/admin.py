@@ -41,7 +41,7 @@ class AdminRepository:
 
 
     @staticmethod
-    async def get_student_by_id(admin_id:str) -> typing.Union[Admin, None]:
+    async def get_admin_by_id(admin_id:str) -> typing.Union[Admin, None]:
 
         query = Admin.objects(id=admin_id).first()
 

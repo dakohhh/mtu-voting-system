@@ -39,7 +39,7 @@ async def create_admin(request: Request, secret: str, admin_input: AdminSchema):
 
     context = {"admin": admin.to_dict()}
 
-    return CustomResponse("created admin user successfully", data=context)
+    return CustomResponse("created admin user successfully", data=context, status=status.HTTP_201_CREATED)
 
 
 @router.get("/election")
@@ -108,7 +108,10 @@ async def get_all_candidates_for_election(
 
     context = {"candidates": [candidate.to_dict() for candidate in candidates]}
 
-    return CustomResponse("all candidates", data=context)
+    return CustomResponse("all candidates", data=context, status=status.HTTP_201_CREATED)
+
+
+
 
 
 @router.post("/candidate")
@@ -144,7 +147,7 @@ async def add_candidate_to_election(
 
     context = {"candidate": candidate.to_dict()}
 
-    return CustomResponse("created candidate successfully", data=context)
+    return CustomResponse("created candidate successfully", data=context, status=status.HTTP_201_CREATED)
 
 
 @router.delete("/candidate/{id}")
@@ -179,9 +182,10 @@ async def delete_election(
 
     if election is None:
         raise BadRequestException("this election doesn't exists")
+    
+
+    election.delete()
 
 
-
-    context = {"admin": admin.to_dict()}
 
     return CustomResponse("deleted election successfully")
