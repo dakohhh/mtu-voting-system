@@ -8,6 +8,7 @@ from repository.admin import AdminRepository
 from repository.candidate import CandidateRepository
 from repository.department import DepartmentRepository
 from repository.elections import ElectionRepository
+from repository.vote import VoteRepository
 from utils.query import (
     AdminSchema,
     CreateCandidateSchema,
@@ -39,7 +40,9 @@ async def create_admin(request: Request, secret: str, admin_input: AdminSchema):
 
     context = {"admin": admin.to_dict()}
 
-    return CustomResponse("created admin user successfully", data=context, status=status.HTTP_201_CREATED)
+    return CustomResponse(
+        "created admin user successfully", data=context, status=status.HTTP_201_CREATED
+    )
 
 
 @router.get("/election")
@@ -108,10 +111,9 @@ async def get_all_candidates_for_election(
 
     context = {"candidates": [candidate.to_dict() for candidate in candidates]}
 
-    return CustomResponse("all candidates", data=context, status=status.HTTP_201_CREATED)
-
-
-
+    return CustomResponse(
+        "all candidates", data=context, status=status.HTTP_201_CREATED
+    )
 
 
 @router.post("/candidate")
@@ -147,45 +149,65 @@ async def add_candidate_to_election(
 
     context = {"candidate": candidate.to_dict()}
 
-    return CustomResponse("created candidate successfully", data=context, status=status.HTTP_201_CREATED)
+    return CustomResponse(
+        "created candidate successfully", data=context, status=status.HTTP_201_CREATED
+    )
 
 
 @router.delete("/candidate/{id}")
 async def remove_candidate_from_election(
     request: Request,
-    id:PydanticObjectId,
-    admin: Admin = Depends(auth.get_current_admin), 
+    id: PydanticObjectId,
+    admin: Admin = Depends(auth.get_current_admin),
 ):
-    
-    candidate = await  CandidateRepository.get_candidate_by_id(id)
 
+    candidate = await CandidateRepository.get_candidate_by_id(id)
 
     if candidate is None:
         raise BadRequestException("this candidate doesn't exists")
-    
 
     candidate.delete()
-
 
     return CustomResponse("deleted candidate successfully")
 
 
-
 @router.delete("/election/{id}")
 async def delete_election(
-    request: Request, id:PydanticObjectId, admin: Admin = Depends(auth.get_current_admin)
+    request: Request,
+    id: PydanticObjectId,
+    admin: Admin = Depends(auth.get_current_admin),
 ):
-    
 
     election = await ElectionRepository.get_election_by_id(id)
 
-
     if election is None:
         raise BadRequestException("this election doesn't exists")
-    
 
     election.delete()
 
-
-
     return CustomResponse("deleted election successfully")
+
+
+@router.get("/election/{id}/results")
+async def get_election_results(
+    request: Request,
+    id: PydanticObjectId,
+    admin: Admin = Depends(auth.get_current_admin),
+):
+
+    election_results = await VoteRepository.get_election_results(id)
+
+    results = []
+
+    for entry in election_results:
+
+        candidate = await CandidateRepository.get_candidate_by_id(entry["_id"])
+
+        candidate_dict = candidate.to_dict()
+
+        candidate_dict.update({"vote_count": entry["count"]})
+
+        results.append(candidate_dict)
+
+    context = {"results": results}
+    return CustomResponse("election voting results", data=context)

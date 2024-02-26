@@ -46,3 +46,5 @@ class AdminRepository:
         query = Admin.objects(id=admin_id).first()
 
         return query
+    
+
