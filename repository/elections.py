@@ -40,3 +40,6 @@ class ElectionRepository:
         query = Election.objects(id=election_id).first()
 
         return query
+
+
+# 
