@@ -1,5 +1,4 @@
 import os
-from tkinter import N
 import jwt
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
