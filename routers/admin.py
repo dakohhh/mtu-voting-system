@@ -62,17 +62,11 @@ async def create_election(
     request: Request,
     election_name: str = Form(...),
     election_image: UploadFile = File(None),
-    department_id: PydanticObjectId = Form(...),
     admin: Admin = Depends(auth.get_current_admin),
 ):
-    election_input = CreateElectionSchema(department_id, election_name, election_image)
+    election_input = CreateElectionSchema(election_name, election_image)
 
-    if not await DepartmentRepository.does_department_exist(
-        election_input.department_id
-    ):
-        raise BadRequestException("this department doesn't exist")
-
-    election = await ElectionRepository.create_election(election_input)
+    election = await ElectionRepository.create_election(admin, election_input)
 
     if election_input.election_image:
 

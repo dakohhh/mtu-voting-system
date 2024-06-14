@@ -12,7 +12,7 @@ class AdminRepository:
         query = Admin(
             email=admin_input.email,
             password=hashPassword(admin_input.password),
-            department=admin_input.department,
+            department=admin_input.department_id,
         )
 
         query.save()
@@ -31,10 +31,10 @@ class AdminRepository:
     
 
     @staticmethod
-    async def get_admin_by_email(email: str, department) -> typing.Union[Admin, None]:
+    async def get_admin_by_email(email: str) -> typing.Union[Admin, None]:
 
 
-        query = Admin.objects(email=email, department=department).first()
+        query = Admin.objects(email=email).first()
 
         return query
     

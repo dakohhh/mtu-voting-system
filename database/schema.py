@@ -94,7 +94,7 @@ class Election(Document):
     def to_dict(self):
 
         return {
-            "id": str(self.id),
+            "election_id": str(self.id),
             "election_name": self.election_name,
             "department": str(self.department.id),
             "election_image": self.election_image,
@@ -111,7 +111,7 @@ class Candidate(Document):
 
     def to_dict(self):
         return {
-            "id": str(self.id),
+            "candidate_id": str(self.id),
             "candidate_name": self.candidate_name,
             "election": str(self.election.id),
             "candidate_image": self.candidate_image,

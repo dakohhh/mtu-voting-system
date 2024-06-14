@@ -71,25 +71,18 @@ class Auth:
 
         access_token = self.auth_token.create_access_token(str(user.id))
 
-        return access_token
-    
-
+        return user, access_token
 
     async def authenticate_admin(self, login_input: LoginSchema):
 
-        user = await AdminRepository.get_admin_by_email(login_input.email, login_input.department)
-
+        user = await AdminRepository.get_admin_by_email(login_input.email)
 
         if user is None or not checkPassword(login_input.password, user.password):
             raise CredentialsException("incorrect email or password")
 
         access_token = self.auth_token.create_access_token(str(user.id))
 
-        return access_token
-    
-
-
-
+        return user, access_token
 
     async def get_current_student(
         self, request: Request, data: HTTPAuthorizationCredentials = Depends(bearer)
@@ -106,8 +99,6 @@ class Auth:
             raise CredentialsException("this student doesn't exists")
 
         return user
-    
-
 
     async def get_current_admin(
         self, request: Request, data: HTTPAuthorizationCredentials = Depends(bearer)
@@ -118,7 +109,6 @@ class Auth:
         access_token_data = self.auth_token.verify_access_token(credentials)
 
         user = await AdminRepository.get_admin_by_id(access_token_data.user)
-
 
         if user is None:
 

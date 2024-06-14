@@ -25,11 +25,11 @@ auth = Auth()
 
 
 @router.post("/signup")
-async def signup_student(request: Request, signup_input: SignupSchema):
+async def signup_student(request: Request,background_task: BackgroundTasks,  signup_input: SignupSchema):
 
     tasks = [
         StudentRepository.does_student_email_exits(signup_input.email),
-        DepartmentRepository.does_department_exist(signup_input.department),
+        DepartmentRepository.does_department_exist(signup_input.department_id),
     ]
 
     (
@@ -47,33 +47,6 @@ async def signup_student(request: Request, signup_input: SignupSchema):
 
     student = await StudentRepository.create_student(signup_input)
 
-    context = {"student": student.to_dict()}
-
-    return CustomResponse(
-        "signup student successfully", data=context, status=status.HTTP_201_CREATED
-    )
-
-
-@router.post("/send_voting_number")
-async def send_voting_number(
-    request: Request, student: Student = Depends(auth.get_current_student)
-):
-
-    context = {"student": student.to_dict()}
-
-    return CustomResponse("signup student successfully", data=context)
-
-
-@router.post("/request_otp")
-async def request_otp(
-    request: Request, email: EmailStr, background_task: BackgroundTasks
-):
-
-    student = await StudentRepository.get_student_by_email(email)
-
-    if student is None:
-        raise BadRequestException("this email doesn't exists")
-
     otp = generate_random_otp()
 
     if await OTPRespository.does_otp_exist(student):
@@ -85,7 +58,45 @@ async def request_otp(
 
     background_task.add_task(send_otp_mail, student, otp)
 
-    return CustomResponse("sent otp successfully", data={"otp": str(otp)})
+    context = {"student": student.to_dict()}
+
+    return CustomResponse(
+        "signup student successfully, please verify your email", data=context, status=status.HTTP_201_CREATED
+    )
+
+
+# @router.post("/send_voting_number")
+# async def send_voting_number(
+#     request: Request, student: Student = Depends(auth.get_current_student)
+# ):
+
+#     context = {"student": student.to_dict()}
+
+#     return CustomResponse("signup student successfully", data=context)
+
+
+# @router.post("/request_otp")
+# async def request_otp(
+#     request: Request, email: EmailStr, background_task: BackgroundTasks
+# ):
+
+#     student = await StudentRepository.get_student_by_email(email)
+
+#     if student is None:
+#         raise BadRequestException("this email doesn't exists")
+
+#     otp = generate_random_otp()
+
+#     if await OTPRespository.does_otp_exist(student):
+
+#         await OTPRespository.update_otp(student, hashPassword(str(otp)))
+
+#     else:
+#         await OTPRespository.create_otp(student, hashPassword(str(otp)))
+
+#     background_task.add_task(send_otp_mail, student, otp)
+
+#     return CustomResponse("sent otp successfully", data={"otp": str(otp)})
 
 
 @router.post("/verify")
@@ -169,7 +180,7 @@ async def vote_for_candidate(
     
     
     if await VoteRepository.has_voted_for_election(student, vote_input.election_id):
-        raise BadRequestException("you have voted on this election already")
+        raise BadRequestException("you have voted on this election already!")
     
 
     vote = await VoteRepository.vote_for_candidate(student, vote_input)

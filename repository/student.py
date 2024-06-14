@@ -14,7 +14,7 @@ class StudentRepository:
             lastname=signup_input.lastname,
             password=hashPassword(signup_input.password),
             email=signup_input.email,
-            department=signup_input.department,
+            department=signup_input.department_id,
         )
 
         query.save()

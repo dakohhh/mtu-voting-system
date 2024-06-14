@@ -11,8 +11,6 @@ class LoginSchema(BaseModel):
 
     password: str
 
-    department_id: PydanticObjectId
-
 
 class SignupSchema(BaseModel):
 
@@ -48,11 +46,9 @@ class AdminSchema(BaseModel):
 class CreateElectionSchema:
     def __init__(
         self,
-        department_id: PydanticObjectId,
         election_name: str,
         election_image: UploadFile = File(None),
     ):
-        self.department_id = department_id
         self.election_name = election_name
         self.election_image = election_image
 
